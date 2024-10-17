@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "airtable": "^0.12.2",
     "bootstrap": "^5.2.2",
     "bootstrap-icons": "^1.9.1",
     "rfs": "^9.0.6"
