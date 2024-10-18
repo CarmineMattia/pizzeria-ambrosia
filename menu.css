@@ -1,1 +1,33 @@
 
+#category-nav {
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  #category-nav .nav {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  #category-nav .nav::-webkit-scrollbar {
+    display: none;
+  }
+  
+  #category-nav .nav-link {
+    color: #8e101b;
+    white-space: nowrap;
+  }
+
+  #category-nav .nav-link.active {
+    background-color: #8e101b;
+    color: #fcf0c8;
+  }
+
+  #category-nav-div {
+    background-color: #fcf0c8;
+  }
+
+  
+  #menu-container {
+    margin-bottom: 60px;
+  }

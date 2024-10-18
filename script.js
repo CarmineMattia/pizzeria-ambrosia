@@ -2,7 +2,7 @@
 
 "use strict";
 
-// Existing scroll functionality
+// Existing scroll functionality for top navbar
 let prevScrollPos = window.pageYOffset;
 console.log(prevScrollPos);
 window.onscroll = function () {
@@ -15,6 +15,16 @@ window.onscroll = function () {
   }
   prevScrollPos = currentScrollPos;
 };
+
+// Function to sort categories
+function sortCategories(categories, categoryOrder) {
+  return Object.keys(categories)
+    .sort((a, b) => (categoryOrder[a] || Infinity) - (categoryOrder[b] || Infinity))
+    .reduce((obj, key) => {
+      obj[key] = categories[key];
+      return obj;
+    }, {});
+}
 
 // Function to fetch menu data from your serverless function
 async function fetchMenuData() {
@@ -33,15 +43,18 @@ async function fetchMenuData() {
       );
     }
 
-    const data = await response.json();
-    console.log("Data received:", data);
+    const { categories, categoryOrder } = await response.json();
+    console.log("Data received:", categories);
+    console.log("Category order:", categoryOrder);
     hideLoader();
-    displayMenuByCategory(data);
+    const sortedCategories = sortCategories(categories, categoryOrder);
+    displayMenuByCategory(sortedCategories);
   } catch (error) {
     console.error(
       "There was a problem with the fetch operation:",
       error.message
     );
+    displayError(error.message);
   }
 }
 
@@ -50,13 +63,15 @@ function sanitizeCategoryName(name) {
   return name.toLowerCase().replace(/[^a-z0-9]/g, '-');
 }
 
-// Rest of your menu display logic here
+// Function to display menu by category
 function displayMenuByCategory(categories) {
   const menuContainer = document.getElementById("menu-container");
-  const categoryNav = document.getElementById("category-nav");
+  const categoryNav = document.querySelector("#category-nav .nav");
 
   menuContainer.innerHTML = "";
   categoryNav.innerHTML = "";
+
+  let isFirstCategory = true;
 
   for (const [category, items] of Object.entries(categories)) {
     const sanitizedCategoryName = sanitizeCategoryName(category);
@@ -64,7 +79,7 @@ function displayMenuByCategory(categories) {
     // Add category to navigation
     const navItem = document.createElement("li");
     navItem.className = "nav-item";
-    navItem.innerHTML = `<a class="nav-link" href="#${sanitizedCategoryName}">${category}</a>`;
+    navItem.innerHTML = `<a class="nav-link px-3 py-2 ${isFirstCategory ? 'active' : ''}" href="#${sanitizedCategoryName}">${category}</a>`;
     categoryNav.appendChild(navItem);
 
     // Add category and items to menu
@@ -87,6 +102,27 @@ function displayMenuByCategory(categories) {
     divider.className = "greek-stencil mt-2 p-1";
     divider.innerHTML = ".<br /><br />.";
     menuContainer.appendChild(divider);
+
+    isFirstCategory = false;
+  }
+
+  // Add scroll event listener to update active category
+  window.addEventListener('scroll', updateActiveCategory);
+}
+
+// Function to update the active category in the bottom navbar
+function updateActiveCategory() {
+  const categories = document.querySelectorAll('#menu-container > div[id]');
+  const navLinks = document.querySelectorAll('#category-nav .nav-link');
+  
+  for (let i = 0; i < categories.length; i++) {
+    const rect = categories[i].getBoundingClientRect();
+    if (rect.top <= 100 && rect.bottom >= 100) {
+      navLinks.forEach(link => link.classList.remove('active'));
+      navLinks[i].classList.add('active');
+      navLinks[i].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      break;
+    }
   }
 }
 
@@ -134,5 +170,6 @@ function displayError(message) {
     </div>
   `;
 }
+
 // Call fetchMenuData when the DOM is loaded
 document.addEventListener("DOMContentLoaded", fetchMenuData);

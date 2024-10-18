@@ -1,10 +1,7 @@
-// C:\Users\Administrator\Desktop\pizzeria-ambrosia\netlify\functions\getAirtableData.js
-
 const Airtable = require('airtable');
 
-// Your base ID
 const BASE_ID = 'appI9gKsHB7gF86G7';
-const TABLE_NAME = 'Imported table'; // Update this if your table name is different
+const TABLE_NAME = 'Imported table';
 
 exports.handler = async function(event, context) {
   console.log('Function `getAirtableData` invoked');
@@ -30,16 +27,21 @@ exports.handler = async function(event, context) {
     console.log(`Fetched ${records.length} records`);
 
     let categories = {};
+    let categoryOrder = {};
 
     records.forEach(record => {
       let category = record.get('Category');
+      let order = record.get('Order'); // Assuming you have an 'Order' column in your table
       if (!categories[category]) {
         categories[category] = [];
+        categoryOrder[category] = order || Infinity; // Use Infinity if no order is specified
       }
       categories[category].push({
         id: record.id,
         fields: record.fields
       });
+      console.log('%c record =', 'color: white; font-size: 15px; font-weight: bold;', record);
+      console.log('%c order =', 'color: white; font-size: 15px; font-weight: bold;', order);
     });
 
     console.log('Successfully processed records');
@@ -50,7 +52,7 @@ exports.handler = async function(event, context) {
         "Access-Control-Allow-Headers": "Content-Type",
         "Access-Control-Allow-Methods": "GET, POST, OPTION",
       },
-      body: JSON.stringify(categories)
+      body: JSON.stringify({ categories, categoryOrder })
     };
   } catch (err) {
     console.error('Error in getAirtableData:', err);
